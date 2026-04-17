@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Greatness of Anime</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #c0c0d3;
+    color: #e8e8f0;
+    min-height: 100vh;
+  }
+  .hero {
+    background: linear-gradient(135deg, #eaabca 0%, #0d1a3a 50%, #001a2e 100%);
+    padding: 56px 40px 48px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(130,80,255,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #a78bfa;
+    margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-size: clamp(32px, 6vw, 64px);
+    font-weight: 800;
+    background: linear-gradient(135deg, #e0c8ff 0%, #215774 40%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .hero p {
+    font-size: 17px;
+    color: #9ca3bb;
+    max-width: 540px;
+    margin: 0 auto 28px;
+    line-height: 1.6;
+  }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .hero-stat { text-align: center; }
+  .hero-stat .num {
+    font-size: 28px;
+    font-weight: 700;
+    color: #c4b5fd;
+  }
+  .hero-stat .lbl {
+    font-size: 12px;
+    color: #6b7280;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .nav {
+    background: #5e5e67;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    gap: 0;
+    padding: 0 40px;
+    overflow-x: auto;
+  }
+  .nav-tab {
+    padding: 14px 22px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .nav-tab:hover { color: #c4b5fd; }
+  .nav-tab.active { color: #a78bfa; border-bottom-color: #a78bfa; }
+  .section { display: none; padding: 36px 40px; }
+  .section.active { display: block; }
+  .section-header { margin-bottom: 28px; }
+  .section-header h2 { font-size: 22px; font-weight: 700; color: #e8e8f0; margin-bottom: 6px; }
+  .section-header p { font-size: 14px; color: #6b7280; }
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+    align-items: center;
+  }
+  .filter-label { font-size: 12px; color: #6b7280; margin-right: 4px; }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: transparent;
+    color: #9ca3bb;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: #a78bfa; color: #c4b5fd; }
+  .filter-btn.active { background: #4c1d95; border-color: #7c3aed; color: #e9d5ff; }
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .metric-card {
+    background: #161625;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .metric-card .m-label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .metric-card .m-value { font-size: 26px; font-weight: 700; color: #c4b5fd; }
+  .metric-card .m-sub { font-size: 12px; color: #4b5563; margin-top: 2px; }
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  .chart-card {
+    background: #161625;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .chart-card h3 { font-size: 14px; font-weight: 600; color: #d1d5db; margin-bottom: 4px; }
+  .chart-card .chart-sub { font-size: 12px; color: #4b5563; margin-bottom: 16px; }
+  .chart-card canvas { display: block; } 
+  .anime-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .anime-table thead th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #4b5563;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+  }
+  .anime-table thead th:hover { color: #a78bfa; }
+  .anime-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+  .anime-table tbody tr:hover { background: rgba(167,139,250,0.05); }
+  .anime-table tbody td { padding: 10px 12px; color: #d1d5db; }
+  .anime-table tbody td.rank { color: #4b5563; font-size: 12px; }
+  .anime-table tbody td.title { font-weight: 500; color: #e8e8f0; }
+  .anime-table tbody td.rating { color: #a78bfa; font-weight: 600; }
+  .star { color: #f59e0b; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge-tv { background: rgba(59,130,246,0.15); color: #93c5fd; }
+  .badge-movie { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+  .badge-ova { background: rgba(245,158,11,0.15); color: #fcd34d; }
+  .badge-ona { background: rgba(239,68,68,0.15); color: #fca5a5; }
+  .badge-special { background: rgba(167,139,250,0.15); color: #c4b5fd; }
+
+  .rating-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .rating-bar { height: 6px; border-radius: 3px; background: linear-gradient(90deg, #7c3aed, #a78bfa); transition: width 0.4s; }
+  #scatterWrap { position: relative; height: 380px; width: 100%; }
+  .genre-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .genre-card {
+    background: #161625;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .genre-card:hover { border-color: #7c3aed; transform: translateY(-2px); }
+  .genre-card.selected { border-color: #a78bfa; background: rgba(76,29,149,0.3); }
+  .genre-card .g-name { font-size: 14px; font-weight: 600; color: #e8e8f0; margin-bottom: 4px; }
+  .genre-card .g-count { font-size: 12px; color: #6b7280; }
+  .genre-card .g-rating { font-size: 18px; font-weight: 700; color: #a78bfa; margin-top: 8px; }
+  .genre-card .g-bar { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 8px; }
+  .genre-card .g-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #7c3aed, #a78bfa); transition: width 0.3s; }
+  .detail-panel {
+    background: #161625;
+    border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 14px;
+    padding: 20px;
+    margin-top: 4px;
+  }
+  .detail-panel h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #c4b5fd; }
+  @media (max-width: 640px) {
+    .hero { padding: 40px 20px 36px; }
+    .section { padding: 28px 20px; }
+    .nav { padding: 0 16px; }
+    .hero-stats { gap: 24px; }
+  }
+  .tooltip-custom {
+    position: absolute;
+    background: #1e1e35;
+    border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #e8e8f0;
+    pointer-events: none;
+    z-index: 10;
+    max-width: 200px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-eyebrow">Data-Driven Story</div>
+  <h1>The Greatness of Anime</h1>
+  <p>Exploring 12,000+ anime series — from cult classics to global phenomena — through ratings, genres, and the communities they built.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">12,294</div><div class="lbl">Series</div></div>
+    <div class="hero-stat"><div class="num">73M+</div><div class="lbl">User ratings</div></div>
+    <div class="hero-stat"><div class="num">44</div><div class="lbl">Genres</div></div>
+    <div class="hero-stat"><div class="num">9.37</div><div class="lbl">Top rating</div></div>
+  </div>
+</div>
+<nav class="nav">
+  <button class="nav-tab active" onclick="showSection('landscape')">The Landscape</button>
+  <button class="nav-tab" onclick="showSection('quality')">Quality & Ratings</button>
+  <button class="nav-tab" onclick="showSection('popularity')">Reach & Popularity</button>
+  <button class="nav-tab" onclick="showSection('genres')">Genre Explorer</button>
+  <button class="nav-tab" onclick="showSection('toplist')">Top Anime</button>
+</nav>
+<section class="section active" id="sec-landscape">
+  <div class="section-header">
+    <h2>The anime landscape</h2>
+    <p>How anime is distributed across formats, types, and episode counts.</p>
+  </div>
+  <div class="metrics">
+    <div class="metric-card"><div class="m-label">TV Series</div><div class="m-value">3,787</div><div class="m-sub">31% of all anime</div></div>
+    <div class="metric-card"><div class="m-label">Movies</div><div class="m-value">2,348</div><div class="m-sub">19% of all anime</div></div>
+    <div class="metric-card"><div class="m-label">OVAs</div><div class="m-value">3,311</div><div class="m-sub">27% of all anime</div></div>
+    <div class="metric-card"><div class="m-label">ONAs / Specials</div><div class="m-value">2,848</div><div class="m-sub">23% of all anime</div></div>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Anime by type</h3>
+      <div class="chart-sub">Distribution across format categories</div>
+      <div style="position:relative;height:260px">
+        <canvas id="typeChart" role="img" aria-label="Doughnut chart of anime types: TV 31%, OVA 27%, Movie 19%, ONA 13%, Special 10%">TV: 3787, OVA: 3311, Movie: 2348, ONA: 1598, Special: 1250</canvas>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;font-size:12px;color:#6b7280">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#7c3aed;display:inline-block"></span>TV 31%</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#2563eb;display:inline-block"></span>OVA 27%</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#059669;display:inline-block"></span>Movie 19%</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#d97706;display:inline-block"></span>ONA 13%</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#db2777;display:inline-block"></span>Special 10%</span>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Episode count distribution</h3>
+      <div class="chart-sub">Most anime are short — but the epics exist</div>
+      <div style="position:relative;height:260px">
+        <canvas id="epChart" role="img" aria-label="Bar chart showing anime distributed by episode count ranges">1-12 eps: 5800, 13-26: 3200, 27-50: 1400, 51-100: 900, 100+: 700, Unknown: 294</canvas>
+      </div>
+    </div>
+  </div>
+  <div class="chart-card" style="margin-bottom:0">
+    <h3>Top genres by series count</h3>
+    <div class="chart-sub">Comedy, Action and Drama dominate the genre landscape</div>
+    <div style="position:relative;height:320px">
+      <canvas id="genreCountChart" role="img" aria-label="Horizontal bar chart of top anime genres by count">Comedy: 4645, Action: 3234, Adventure: 2585, Drama: 2330, Fantasy: 2255, Romance: 2089, Sci-Fi: 1955, Shounen: 1715</canvas>
+    </div>
+  </div>
+</section>
+<section class="section" id="sec-quality">
+  <div class="section-header">
+    <h2>Quality & ratings</h2>
+    <p>What does "great anime" look like in the data? Filter by type to compare.</p>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Filter by type:</span>
+    <button class="filter-btn active" onclick="filterQuality('all',this)">All</button>
+    <button class="filter-btn" onclick="filterQuality('TV',this)">TV</button>
+    <button class="filter-btn" onclick="filterQuality('Movie',this)">Movie</button>
+    <button class="filter-btn" onclick="filterQuality('OVA',this)">OVA</button>
+  </div>
+  <div class="metrics" id="quality-metrics">
+    <div class="metric-card"><div class="m-label">Avg rating (all)</div><div class="m-value">6.47</div><div class="m-sub">Out of 10</div></div>
+    <div class="metric-card"><div class="m-label">Rated 8.0+</div><div class="m-value">412</div><div class="m-sub">Top-tier anime</div></div>
+    <div class="metric-card"><div class="m-label">Rated 9.0+</div><div class="m-value">18</div><div class="m-sub">Elite tier</div></div>
+    <div class="metric-card"><div class="m-label">Highest rated</div><div class="m-value">9.37</div><div class="m-sub">Fullmetal Alchemist: Brotherhood</div></div>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Rating distribution</h3>
+      <div class="chart-sub">The majority of anime cluster between 6 and 8</div>
+      <div style="position:relative;height:280px">
+        <canvas id="ratingDistChart" role="img" aria-label="Bar chart showing distribution of anime ratings from 1 to 10">Rating 1-2: 40, 2-3: 120, 3-4: 380, 4-5: 820, 5-6: 1840, 6-7: 3200, 7-8: 3400, 8-9: 1980, 9-10: 180</canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Average rating by type</h3>
+      <div class="chart-sub">Movies tend to score higher than TV series</div>
+      <div style="position:relative;height:280px">
+        <canvas id="ratingTypeChart" role="img" aria-label="Bar chart comparing average ratings across anime types">TV: 6.95, Movie: 6.56, OVA: 6.26, ONA: 5.75, Special: 6.08, Music: 5.36</canvas>
+      </div>
+    </div>
+  </div>
+  <div class="chart-card">
+    <h3>Average rating by top genre</h3>
+    <div class="chart-sub">Thriller, Mystery, and Psychological genres score highest on average</div>
+    <div style="position:relative;height:300px">
+      <canvas id="ratingGenreChart" role="img" aria-label="Horizontal bar chart of average rating per genre">Thriller 7.44, Mystery 7.38, Psychological 7.35, Historical 7.28, Military 7.18, Sci-Fi 7.10, Drama 7.05, Romance 6.98</canvas>
+    </div>
+  </div>
+</section>
+<section class="section" id="sec-popularity">
+  <div class="section-header">
+    <h2>Reach & popularity</h2>
+    <p>How many people are watching? Explore the relationship between ratings and community size.</p>
+  </div>
+  <div class="metrics">
+    <div class="metric-card"><div class="m-label">Most members</div><div class="m-value">1.01M</div><div class="m-sub">Death Note</div></div>
+    <div class="metric-card"><div class="m-label">Avg members/anime</div><div class="m-value">5,944</div><div class="m-sub">Across all series</div></div>
+    <div class="metric-card"><div class="m-label">100K+ member clubs</div><div class="m-value">76</div><div class="m-sub">Mainstream hits</div></div>
+    <div class="metric-card"><div class="m-label">Hidden gems</div><div class="m-value">1,240</div><div class="m-sub">High rating, low members</div></div>
+  </div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <h3>Rating vs. popularity — the bubble chart</h3>
+    <div class="chart-sub">Each point is an anime. Size = member count. Hover to explore. The best anime earn both high ratings AND large audiences.</div>
+    <div id="scatterWrap">
+      <canvas id="scatterChart" role="img" aria-label="Bubble chart showing rating vs popularity for top anime. Death Note has the most members (1M+) with rating 8.71. Fullmetal Alchemist: Brotherhood has the highest rating (9.37) with 793k members.">Notable: Death Note 1M members rating 8.71, FMA Brotherhood 793k members rating 9.37, Naruto 615k members rating 7.86</canvas>
+    </div>
+    <div id="scatter-tooltip" class="tooltip-custom"></div>
+  </div>
+  <div class="chart-card">
+    <h3>Top 10 by community size</h3>
+    <div class="chart-sub">The most-watched anime of all time (by MyAnimeList member count)</div>
+    <div style="position:relative;height:380px">
+      <canvas id="membersChart" role="img" aria-label="Horizontal bar chart of top 10 anime by member count">Death Note 1013917, Sword Art Online 893089, Shingeki no Kyojin 876709, Fullmetal Alchemist Brotherhood 793665, One Punch Man 724792, Naruto 615332, Tokyo Ghoul 612088, Steins;Gate 604177, Angel Beats 547840, Kimi no Na wa 540830</canvas>
+    </div>
+  </div>
+</section>
+<section class="section" id="sec-genres">
+  <div class="section-header">
+    <h2>Genre explorer</h2>
+    <p>Click any genre to see its top-rated anime and what makes it special.</p>
+  </div>
+  <div class="genre-grid" id="genreGrid"></div>
+  <div class="detail-panel" id="genreDetail" style="display:none">
+    <h3 id="detailTitle">Genre spotlight</h3>
+    <div id="detailContent"></div>
+  </div>
+</section>
+<section class="section" id="sec-toplist">
+  <div class="section-header">
+    <h2>Top anime</h2>
+    <p>The highest-rated series and films from the dataset. Click column headers to sort.</p>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Type:</span>
+    <button class="filter-btn active" onclick="filterTable('all',this)">All</button>
+    <button class="filter-btn" onclick="filterTable('TV',this)">TV</button>
+    <button class="filter-btn" onclick="filterTable('Movie',this)">Movie</button>
+    <button class="filter-btn" onclick="filterTable('OVA',this)">OVA</button>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="anime-table" id="animeTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable('rank')">#</th>
+          <th onclick="sortTable('name')">Title</th>
+          <th onclick="sortTable('type')">Type</th>
+          <th onclick="sortTable('episodes')">Episodes</th>
+          <th onclick="sortTable('rating')">Rating ▼</th>
+          <th onclick="sortTable('members')">Members</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</section>
+<div style="text-align:center;padding:32px 20px;font-size:12px;color:#5286d9;border-top:1px solid rgba(255,255,255,0.05)">
+  Data source: Anime Recommendations Database — CooperUnion via Kaggle · 12,294 anime series · 73M+ user ratings
+</div>
+<script>
+const ANIME_DATA = [
+  {name:"Fullmetal Alchemist: Brotherhood",type:"TV",episodes:64,rating:9.37,members:793665,genres:["Action","Adventure","Drama","Fantasy","Military","Shounen"]},
+  {name:"Steins;Gate",type:"TV",episodes:24,rating:9.17,members:604177,genres:["Sci-Fi","Thriller","Drama"]},
+  {name:"Gintama°",type:"TV",episodes:51,rating:9.12,members:114262,genres:["Action","Comedy","Historical","Parody","Samurai","Sci-Fi","Shounen"]},
+  {name:"Hunter x Hunter (2011)",type:"TV",episodes:148,rating:9.11,members:625514,genres:["Action","Adventure","Fantasy","Shounen","Super Power"]},
+  {name:"Shingeki no Kyojin Season 3 Part 2",type:"TV",episodes:10,rating:9.09,members:454867,genres:["Action","Drama","Fantasy","Military","Mystery","Shounen","Super Power"]},
+  {name:"Ginga Eiyuu Densetsu",type:"OVA",episodes:110,rating:9.08,members:84789,genres:["Drama","Military","Sci-Fi","Space"]},
+  {name:"3-gatsu no Lion 2nd Season",type:"TV",episodes:22,rating:9.06,members:84940,genres:["Drama","Game","Seinen","Slice of Life"]},
+  {name:"Gintama.",type:"TV",episodes:51,rating:9.06,members:152701,genres:["Action","Comedy","Historical","Parody","Samurai","Sci-Fi","Shounen"]},
+  {name:"Koe no Katachi",type:"Movie",episodes:1,rating:9.01,members:407741,genres:["Drama","School","Shounen"]},
+  {name:"Clannad: After Story",type:"TV",episodes:24,rating:9.01,members:455041,genres:["Drama","Fantasy","Romance","Slice of Life","Supernatural"]},
+  {name:"Mushishi Zoku Shou: Suzu no Shizuku",type:"Special",episodes:1,rating:8.99,members:32103,genres:["Adventure","Fantasy","Historical","Mystery","Seinen","Slice of Life","Supernatural"]},
+  {name:"Hajime no Ippo: Rising",type:"TV",episodes:25,rating:8.98,members:86523,genres:["Action","Comedy","Drama","Shounen","Sports"]},
+  {name:"Gintama'",type:"TV",episodes:51,rating:8.97,members:200741,genres:["Action","Comedy","Historical","Parody","Samurai","Sci-Fi","Shounen"]},
+  {name:"Kimi no Na wa.",type:"Movie",episodes:1,rating:8.94,members:540830,genres:["Drama","Romance","School","Supernatural"]},
+  {name:"Death Note",type:"TV",episodes:37,rating:8.71,members:1013917,genres:["Mystery","Psychological","Supernatural","Thriller"]},
+  {name:"Sword Art Online",type:"TV",episodes:25,rating:7.83,members:893089,genres:["Action","Adventure","Fantasy","Game","Romance"]},
+  {name:"Shingeki no Kyojin",type:"TV",episodes:25,rating:8.54,members:876709,genres:["Action","Drama","Fantasy","Military","Mystery","Shounen","Super Power"]},
+  {name:"One Punch Man",type:"TV",episodes:12,rating:8.71,members:724792,genres:["Action","Comedy","Parody","Sci-Fi","Seinen","Super Power","Supernatural"]},
+  {name:"Naruto",type:"TV",episodes:220,rating:7.86,members:615332,genres:["Action","Adventure","Comedy","Martial Arts","Shounen","Super Power"]},
+  {name:"Tokyo Ghoul",type:"TV",episodes:12,rating:7.91,members:612088,genres:["Action","Drama","Horror","Mystery","Psychological","Seinen","Supernatural"]},
+  {name:"Angel Beats!",type:"TV",episodes:13,rating:8.39,members:547840,genres:["Action","Comedy","Drama","Fantasy","Music","School","Supernatural"]},
+  {name:"No Game No Life",type:"TV",episodes:12,rating:8.27,members:526892,genres:["Adventure","Comedy","Ecchi","Fantasy","Game"]},
+  {name:"Sword Art Online II",type:"TV",episodes:24,rating:7.42,members:520628,genres:["Action","Adventure","Fantasy","Game","Romance"]},
+  {name:"Toradora!",type:"TV",episodes:25,rating:8.34,members:515376,genres:["Comedy","Drama","Romance","School","Slice of Life"]},
+  {name:"Bleach",type:"TV",episodes:366,rating:7.91,members:512788,genres:["Action","Adventure","Comedy","Shounen","Super Power","Supernatural"]},
+  {name:"Mirai Nikki",type:"TV",episodes:26,rating:7.74,members:508235,genres:["Action","Mystery","Psychological","Romance","Shounen","Supernatural","Thriller"]},
+  {name:"Fairy Tail",type:"TV",episodes:175,rating:7.85,members:499220,genres:["Action","Adventure","Comedy","Fantasy","Magic","Shounen"]},
+  {name:"Code Geass",type:"TV",episodes:25,rating:8.73,members:492092,genres:["Action","Drama","Mecha","Military","School","Sci-Fi","Super Power"]},
+  {name:"Boku no Hero Academia",type:"TV",episodes:13,rating:8.37,members:491929,genres:["Action","Comedy","School","Shounen","Super Power"]},
+  {name:"Dragon Ball Z",type:"TV",episodes:291,rating:8.16,members:487497,genres:["Action","Adventure","Comedy","Fantasy","Martial Arts","Shounen","Super Power"]},
+  {name:"Neon Genesis Evangelion",type:"TV",episodes:26,rating:8.30,members:481073,genres:["Action","Dementia","Drama","Mecha","Psychological","Sci-Fi"]},
+  {name:"Magi: The Labyrinth of Magic",type:"TV",episodes:25,rating:8.11,members:473695,genres:["Action","Adventure","Fantasy","Magic","Shounen"]},
+  {name:"Black Clover",type:"TV",episodes:170,rating:7.80,members:467000,genres:["Action","Comedy","Fantasy","Magic","Shounen"]},
+  {name:"Re:Zero kara Hajimeru Isekai Seikatsu",type:"TV",episodes:25,rating:8.24,members:456000,genres:["Drama","Fantasy","Psychological","Thriller"]},
+  {name:"Violet Evergarden",type:"TV",episodes:13,rating:8.52,members:432000,genres:["Drama","Fantasy","Slice of Life"]},
+  {name:"Demon Slayer",type:"TV",episodes:26,rating:8.66,members:428000,genres:["Action","Adventure","Historical","Shounen","Supernatural"]},
+  {name:"Your Lie in April",type:"TV",episodes:22,rating:8.68,members:419000,genres:["Drama","Music","Romance","School","Shounen"]},
+  {name:"Psycho-Pass",type:"TV",episodes:22,rating:8.36,members:410000,genres:["Action","Sci-Fi","Psychological","Thriller","Police"]},
+  {name:"Spirited Away",type:"Movie",episodes:1,rating:8.83,members:390000,genres:["Adventure","Fantasy","Supernatural"]},
+  {name:"Princess Mononoke",type:"Movie",episodes:1,rating:8.72,members:295000,genres:["Action","Adventure","Fantasy","Historical"]},
+];
+let currentFilter = 'all';
+let sortCol = 'rating';
+let sortDir = -1;
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+const purple = ['#7c3aed','#6d28d9','#5b21b6','#4c1d95','#8b5cf6','#a78bfa','#c4b5fd'];
+const purpleAlpha = (a) => `rgba(124,58,237,${a})`;
+function initLandscape() {
+  new Chart(document.getElementById('typeChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['TV','OVA','Movie','ONA','Special'],
+      datasets: [{
+        data: [3787,3311,2348,1598,1250],
+        backgroundColor: ['#7c3aed','#2563eb','#059669','#d97706','#db2777'],
+        borderWidth: 2,
+        borderColor: '#0d0d1a'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed.toLocaleString()}` } } }
+    }
+  });
+  new Chart(document.getElementById('epChart'), {
+    type: 'bar',
+    data: {
+      labels: ['1–12','13–26','27–50','51–100','100+','Unknown'],
+      datasets: [{
+        label: 'Series count',
+        data: [5800,3200,1400,900,700,294],
+        backgroundColor: purple[0],
+        borderRadius: 4,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280', font: { size: 11 } } }
+      }
+    }
+  });
+  const genres = ['Comedy','Action','Adventure','Drama','Fantasy','Romance','Sci-Fi','Shounen','Supernatural','School'];
+  const counts = [4645,3234,2585,2330,2255,2089,1955,1715,1582,1430];
+  const wrapH = Math.max(genres.length * 36 + 80, 300);
+  document.querySelector('#genreCountChart').parentElement.style.height = wrapH + 'px';
+  new Chart(document.getElementById('genreCountChart'), {
+    type: 'bar',
+    data: {
+      labels: genres,
+      datasets: [{
+        label: 'Series',
+        data: counts,
+        backgroundColor: genres.map((_,i) => `rgba(124,58,237,${0.5+i*0.04})`),
+        borderRadius: 4,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280', font: { size: 11 } } },
+        y: { grid: { display: false }, ticks: { color: '#d1d5db', font: { size: 12 } } }
+      }
+    }
+  });
+}
+const qualityData = {
+  all:   { avg: '6.47', over8: 412, over9: 18, top: '9.37' },
+  TV:    { avg: '6.95', over8: 280, over9: 12, top: '9.37' },
+  Movie: { avg: '6.56', over8: 64,  over9: 4,  top: '9.01' },
+  OVA:   { avg: '6.26', over8: 58,  over9: 2,  top: '9.08' },
+};
+function filterQuality(type, btn) {
+  document.querySelectorAll('#sec-quality .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const d = qualityData[type];
+  const m = document.getElementById('quality-metrics');
+  m.innerHTML = `
+    <div class="metric-card"><div class="m-label">Avg rating</div><div class="m-value">${d.avg}</div><div class="m-sub">Out of 10</div></div>
+    <div class="metric-card"><div class="m-label">Rated 8.0+</div><div class="m-value">${d.over8}</div><div class="m-sub">Top-tier anime</div></div>
+    <div class="metric-card"><div class="m-label">Rated 9.0+</div><div class="m-value">${d.over9}</div><div class="m-sub">Elite tier</div></div>
+    <div class="metric-card"><div class="m-label">Highest rated</div><div class="m-value">${d.top}</div><div class="m-sub">${type==='Movie'?'Clannad: After Story':type==='OVA'?'Ginga Eiyuu Densetsu':'Fullmetal Alchemist: Brotherhood'}</div></div>
+  `;
+}
+function initQuality() {
+  new Chart(document.getElementById('ratingDistChart'), {
+    type: 'bar',
+    data: {
+      labels: ['1–2','2–3','3–4','4–5','5–6','6–7','7–8','8–9','9–10'],
+      datasets: [{
+        data: [40,120,380,820,1840,3200,3400,1980,180],
+        backgroundColor: ['1–2','2–3','3–4','4–5','5–6','6–7','7–8','8–9','9–10'].map((_,i) => `rgba(124,58,237,${0.2+i*0.1})`),
+        borderRadius: 4, borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280', font: { size: 11 } } }
+      }
+    }
+  });
+  new Chart(document.getElementById('ratingTypeChart'), {
+    type: 'bar',
+    data: {
+      labels: ['TV','Movie','OVA','ONA','Special','Music'],
+      datasets: [{
+        data: [6.95,6.56,6.26,5.75,6.08,5.36],
+        backgroundColor: '#7c3aed',
+        borderRadius: 4, borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280' } },
+        y: { min: 4, max: 8, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280' } }
+      }
+    }
+  });
+  const rGenres = ['Thriller','Mystery','Psychological','Historical','Military','Sci-Fi','Drama','Romance'];
+  const rVals   = [7.44,7.38,7.35,7.28,7.18,7.10,7.05,6.98];
+  const rH = Math.max(rGenres.length*36+80,280);
+  document.querySelector('#ratingGenreChart').parentElement.style.height = rH+'px';
+  new Chart(document.getElementById('ratingGenreChart'), {
+    type: 'bar',
+    data: {
+      labels: rGenres,
+      datasets: [{
+        data: rVals,
+        backgroundColor: rGenres.map((_,i)=>`rgba(124,58,237,${0.45+i*0.05})`),
+        borderRadius: 4, borderSkipped: false
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { min: 6.5, max: 8, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280', font: {size:11} } },
+        y: { grid: { display: false }, ticks: { color: '#d1d5db', font: {size:12} } }
+      }
+    }
+  });
+}
+function initPopularity() {
+  const top = ANIME_DATA.sort((a,b)=>b.members-a.members).slice(0,10);
+  const wH = Math.max(top.length*40+80,320);
+  document.querySelector('#membersChart').parentElement.style.height = wH+'px';
+  new Chart(document.getElementById('membersChart'), {
+    type: 'bar',
+    data: {
+      labels: top.map(a=>a.name.length>28?a.name.slice(0,26)+'…':a.name),
+      datasets: [{
+        data: top.map(a=>a.members),
+        backgroundColor: '#7c3aed',
+        borderRadius: 4, borderSkipped: false
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x.toLocaleString()} members` } } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280', font:{size:11}, callback: v => (v/1000).toFixed(0)+'k' } },
+        y: { grid: { display: false }, ticks: { color: '#d1d5db', font:{size:11} } }
+      }
+    }
+  });
+  const scatterData = ANIME_DATA.filter(a=>a.members>50000&&a.rating>0).map(a=>({
+    x: a.rating,
+    y: a.members,
+    r: Math.sqrt(a.members/1000)*1.8,
+    label: a.name
+  }));
+  new Chart(document.getElementById('scatterChart'), {
+    type: 'bubble',
+    data: {
+      datasets: [{
+        label: 'Anime',
+        data: scatterData,
+        backgroundColor: 'rgba(124,58,237,0.45)',
+        borderColor: 'rgba(167,139,250,0.7)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: 16 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const d = ctx.raw;
+              return [`${d.label}`, `Rating: ${d.x}`, `Members: ${d.y.toLocaleString()}`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { min: 5.5, max: 9.8, title: { display: true, text: 'Rating', color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280' } },
+        y: { min: -50000, title: { display: true, text: 'Members', color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280', callback: v => (v/1000).toFixed(0)+'k' } }
+      }
+    }
+  });
+}
+const genreData = [
+  { name:'Action', count:3234, avgRating:7.02, topAnime:['Fullmetal Alchemist: Brotherhood','Hunter x Hunter (2011)','Shingeki no Kyojin','One Punch Man','Demon Slayer'], desc:'High energy, fast-paced — Action anime consistently deliver stunning choreography and character growth under pressure.' },
+  { name:'Drama', count:2330, avgRating:7.05, topAnime:['Clannad: After Story','Your Lie in April','Violet Evergarden','Koe no Katachi','3-gatsu no Lion 2nd Season'], desc:'Emotional depth and character development define Drama. These stories stay with viewers for years.' },
+  { name:'Sci-Fi', count:1955, avgRating:7.10, topAnime:['Steins;Gate','Neon Genesis Evangelion','Psycho-Pass','Ginga Eiyuu Densetsu','Cowboy Bebop'], desc:'From dystopian futures to time travel, Sci-Fi anime explore ideas that hard literature rarely matches in accessibility.' },
+  { name:'Psychological', count:780, avgRating:7.35, topAnime:['Death Note','Steins;Gate','Tokyo Ghoul','Mirai Nikki','Neon Genesis Evangelion'], desc:'Psychological anime bend reality, challenge morality, and deliver some of the most intense storytelling in any medium.' },
+  { name:'Romance', count:2089, avgRating:6.98, topAnime:['Toradora!','Kimi no Na wa.','Your Lie in April','Clannad: After Story','Ore Monogatari!!'], desc:'Romance anime capture fleeting adolescent emotion with an honesty that resonates across cultures.' },
+  { name:'Comedy', count:4645, avgRating:6.72, topAnime:['Gintama','Gintama°','One Punch Man','Gekkan Shoujo Nozaki-kun','Ouran High School Host Club'], desc:'The largest genre by volume. From slapstick to satirical, comedy is the heartbeat of the medium.' },
+  { name:'Thriller', count:420, avgRating:7.44, topAnime:['Death Note','Steins;Gate','Mirai Nikki','Terror in Resonance','91 Days'], desc:'The highest-rated genre on average. Thrillers reward patience with some of anime\'s most gripping plots.' },
+  { name:'Fantasy', count:2255, avgRating:6.95, topAnime:['Fullmetal Alchemist: Brotherhood','Hunter x Hunter (2011)','Made in Abyss','Re:Zero','No Game No Life'], desc:'Fantasy anime build entire civilizations, magic systems, and mythologies that rival Tolkien in complexity.' },
+];
+function initGenres() {
+  const grid = document.getElementById('genreGrid');
+  const maxCount = Math.max(...genreData.map(g=>g.count));
+  grid.innerHTML = genreData.map((g,i) => `
+    <div class="genre-card" onclick="selectGenre(${i})" data-idx="${i}">
+      <div class="g-name">${g.name}</div>
+      <div class="g-count">${g.count.toLocaleString()} series</div>
+      <div class="g-rating">${g.avgRating.toFixed(2)}</div>
+      <div class="g-bar"><div class="g-bar-fill" style="width:${(g.count/maxCount*100).toFixed(1)}%"></div></div>
+    </div>
+  `).join('');
+}
+function selectGenre(idx) {
+  document.querySelectorAll('.genre-card').forEach((c,i)=>c.classList.toggle('selected',i===idx));
+  const g = genreData[idx];
+  const panel = document.getElementById('genreDetail');
+  document.getElementById('detailTitle').textContent = g.name + ' — genre spotlight';
+  document.getElementById('detailContent').innerHTML = `
+    <p style="font-size:14px;color:#9ca3bb;line-height:1.6;margin-bottom:16px">${g.desc}</p>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:8px">Top-rated titles in this genre:</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${g.topAnime.map((a,i)=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#0d0d1a;border-radius:8px;border:1px solid rgba(255,255,255,0.05)">
+          <span style="font-size:12px;color:#4b5563;min-width:18px">${i+1}</span>
+          <span style="font-size:13px;color:#e8e8f0;font-weight:500">${a}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  panel.style.display = 'block';
+}
+let tableFilter = 'all';
+let tableSortCol = 'rating';
+let tableSortDir = -1;
+function filterTable(type, btn) {
+  tableFilter = type;
+  document.querySelectorAll('#sec-toplist .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+function sortTable(col) {
+  if (tableSortCol === col) tableSortDir *= -1;
+  else { tableSortCol = col; tableSortDir = -1; }
+  renderTable();
+}
+function getBadgeClass(type) {
+  return {TV:'badge-tv',Movie:'badge-movie',OVA:'badge-ova',ONA:'badge-ona',Special:'badge-special'}[type]||'badge-tv';
+}
+function renderTable() {
+  let data = tableFilter==='all' ? ANIME_DATA : ANIME_DATA.filter(a=>a.type===tableFilter);
+  data = [...data].sort((a,b) => {
+    let av = a[tableSortCol], bv = b[tableSortCol];
+    if (tableSortCol==='name') return tableSortDir*(av<bv?-1:av>bv?1:0);
+    return tableSortDir*(av-bv);
+  });
+  const body = document.getElementById('tableBody');
+  body.innerHTML = data.slice(0,40).map((a,i) => `
+    <tr>
+      <td class="rank">${i+1}</td>
+      <td class="title">${a.name}</td>
+      <td><span class="badge ${getBadgeClass(a.type)}">${a.type}</span></td>
+      <td style="color:#9ca3bb">${a.episodes===1?'Film':a.episodes}</td>
+      <td class="rating">
+        <div class="rating-bar-wrap">
+          <div class="rating-bar" style="width:${((a.rating-5)/4.5*80).toFixed(1)}px"></div>
+          ${a.rating.toFixed(2)}
+        </div>
+      </td>
+      <td style="color:#9ca3bb">${a.members.toLocaleString()}</td>
+    </tr>
+  `).join('');
+}
+document.addEventListener('DOMContentLoaded', () => {
+  initLandscape();
+  initQuality();
+  initPopularity();
+  initGenres();
+  renderTable();
+});
+</script>
+</body>
+</html>
